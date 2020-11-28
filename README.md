@@ -9,6 +9,7 @@ compile: g++ -O2 -o arbtree arbtree.cpp
 
 terminal execute: ./arbtree arity levels
 
+currently the program will create a tree with the arity and number of levels that you specify, traverse it and sum the node values, and then delete the tree.
 
 example: ./arbtree 2 3
 
