@@ -3,9 +3,13 @@ a mini-library mostly in C with some C++ stl that implements n-ary trees and som
 
 ## Instructions
 compile: g++ -O2 -o arbtree arbtree.cpp
+
+
 -O2 enables tail call optimization. Add flags as needed.
 
 terminal execute: ./arbtree arity levels
+
+
 example: ./arbtree 2 3
 
 
