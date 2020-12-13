@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <list>
+#include <stack>
 
 
 struct TreeNode;
@@ -18,6 +19,41 @@ struct TreeNode {
 };
 
 
+/* Iterative function for inorder tree 
+   traversal */
+int inOrderSum(struct TreeNode *root) 
+{ 
+    std::stack<TreeNode*> s; 
+    TreeNode *curr = root; 
+    int sum = 0;
+  
+    while (curr != NULL || s.empty() == false) 
+    { 
+        /* Reach the left most Node of the 
+           curr Node */
+        while (curr !=  NULL) 
+        { 
+            /* place pointer to a tree node on 
+               the stack before traversing 
+              the node's left subtree */
+            s.push(curr); 
+            curr = curr->children.head; 
+        } 
+  
+        /* Current must be NULL at this point */
+        curr = s.top(); 
+        s.pop(); 
+  
+        sum += curr->val;
+  
+        /* we have visited the node and its 
+           left subtree.  Now, it's right 
+           subtree's turn */
+        curr = curr->next; 
+  
+    } /* end of while */
+    return sum;
+} 
 
 int fn_for_children(struct NodeList children, int sum, std::list<TreeNode*>& todo);
 
@@ -78,7 +114,7 @@ accumulators:
  - sum, the sum of all node values seen so far
  - todo, list of pointers to known nodes still to visit
 */
-int sum_tree_tr(struct TreeNode* root) {
+int sum_tree_tr_cpp(struct TreeNode* root) {
   // trampoline guard
   if (root == NULL) { 
     return 0;
@@ -89,6 +125,15 @@ int sum_tree_tr(struct TreeNode* root) {
 
   std::list<TreeNode*> todo;
   return fn_for_node(root, 0, todo);
+}
+
+int sum_tree_tr_c(struct TreeNode* root) {
+  // trampoline guard
+  if (root == NULL) { 
+    return 0;
+  }
+  struct NodeList todo = {NULL, NULL};
+  return fn_for_node_c(root, 0, todo);
 }
 
 
@@ -102,6 +147,7 @@ struct TreeNode* build_perfect_arbtree(int n, int val, int levels) {
   subRoot->val = val;
   subRoot->next = NULL;
   subRoot->children = (struct NodeList){NULL, NULL};
+  subRoot->is_last_sib = 0;
   if (levels == 1) {
     return subRoot;
   }
@@ -113,8 +159,6 @@ struct TreeNode* build_perfect_arbtree(int n, int val, int levels) {
     if (i == 0) {
       subRoot->children.tail = curr;
       curr->is_last_sib = 1;
-    } else {
-      curr->is_last_sib = 0;
     }
     curr->next = prev_sib;
     prev_sib = curr;
@@ -126,8 +170,6 @@ struct TreeNode* build_perfect_arbtree(int n, int val, int levels) {
 
 // free all memory associated with tree rooted at subRoot
 void delete_arbtree(struct TreeNode* subRoot) {
-  //printf("called on %p\n", subRoot);
-  //fflush(stdout); // to make sure it prints
   if (subRoot == NULL) {
     return;
   }
@@ -142,8 +184,6 @@ void delete_arbtree(struct TreeNode* subRoot) {
     delete_arbtree(curr);
     curr = next;
   }
-  //printf("while loop ran %d iterations, subRoot %p\n", i, subRoot);
-  //fflush(stdout); // to make sure it prints
   free(subRoot);
 }
 
@@ -188,24 +228,75 @@ void delete_arbtree_tr(struct TreeNode* root) {
 }
 
 
-// usage: ./arbtree <arity> <levels>
+
+/*
+print tree to terminal
+
+          val
+        val  val
+      val val val val
+accumulators: 
+depth - 
+
+*/
+void print_tree(struct TreeNode* root) {
+  char diagram[1][1];
+}
+
+// from stackOverflow
+
+void printTabs(int count)
+{
+    for (int i = 0; i < count; i++)
+    {
+        putchar('\t');
+    }
+}
+void printTreeRecursive(TreeNode* node, int level)
+{
+    while (node != NULL)
+    {
+        printTabs(level);
+        printf("Node: %d\n", node->val);
+
+        if (node->children.head != NULL)
+        {
+            printTabs(level);
+            printf("Children:\n");
+            printTreeRecursive(node->children.head, level + 1);
+        }
+
+        node = node->next;
+    }
+}
+
+// usage: ./arbtree <arity> <levels> <mode 0: C, 1: C++>
 int main(int argc, char** argv) {
   int arity;
   int levels;
+  int mode;
   char *endptr;
-  if (argc == 3)
+  if (argc == 4)
     arity = strtol (argv [1], &endptr, 10);
     levels = strtol (argv [2], &endptr, 10);
-  if (argc != 3 || *endptr != 0) {
+    mode = strtol (argv [3], &endptr, 10);
+  if (argc != 4 || *endptr != 0) {
     printf ("argument error\n");
     return EXIT_FAILURE;
   }
 
   struct TreeNode* ptree = build_perfect_arbtree(arity, 10, levels);
   printf("build finished\n");
-  fflush(stdout);
-  printf("ptree sum: %d\n", sum_tree_tr(ptree));
-  fflush(stdout);
+  printTreeRecursive(ptree, 0);
+  int sum;
+  if (mode == 0) {
+    sum = sum_tree_tr_c(ptree);
+  } else {
+    sum = inOrderSum(ptree);
+    printf("iterative\n");
+  }
+  printf("ptree sum: %d\n", sum);
+
   delete_arbtree_tr(ptree);
   ptree = NULL;
   printf("delete successful\n");
