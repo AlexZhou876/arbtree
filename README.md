@@ -7,7 +7,9 @@ compile: g++ -O2 -o arbtree arbtree.cpp
 
 -O2 enables tail call optimization. Add flags as needed.
 
-terminal execute: ./arbtree arity levels
+terminal execute: ./arbtree arity levels mode
+
+mode is {0, 1}, 0 is C and 1 is C++, indicating language which the traversal is written in
 
 currently the program will create a perfect tree with the arity and number of levels that you specify, traverse it and sum the node values, and then delete the tree.
 
